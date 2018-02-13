@@ -85,42 +85,42 @@ void intpolcirc(bool dir, float x, float y, float z, float i, float j) {
 
   long sx, sy; // start coordinates of arc may differ from px,py. Routine will correct for difference w/o intervention, but...
 
-  if ((px - cx) <= lr) { //  if ((float)(sq(px - cx)) <= rxr) WAS WRONG!!!
+  if (abs(px - cx) <= lr) { //  if ((float)(sq(px - cx)) <= rxr) WAS WRONG!!!
     sx = px;
     if (py > cy)
-      sy = cy + (long)(sqrt(rxr - sq(sx - cx)));
+      sy = cy + (long)(sqrt(sq((float)(lr)) - sq(sx - cx))); // sy = cy + (long)(sqrt(rxr - sq(sx - cx)));
     if (py < cy)
-      sy = cy - (long)(sqrt(rxr - sq(sx - cx)));
+      sy = cy - (long)(sqrt(sq((float)(lr)) - sq(sx - cx))); // sy = cy - (long)(sqrt(rxr - sq(sx - cx)));
     if (py == cy)
       sy = cy;
   }
   else {
     if (px > cx) {
-      sx = cx + r;
+      sx = cx + lr; // sx = cx + r;
     }
     else {
-      sx = cx - r;
+      sx = cx - lr; // sx = cx - r;
     }
     sy = cy;
   }
 
   long fx, fy; // final coordinates of arc
 
-  if ((ex - cx) <= lr) { //  if ((float)(sq(ex - cx)) <= rxr) WAS WRONG!!!
+  if (abs(ex - cx) <= lr) { //  if ((float)(sq(ex - cx)) <= rxr) WAS WRONG!!!
     fx = ex;
     if (ey > cy)
-      fy = cy + (long)(sqrt(rxr - sq(fx - cx)));
+      fy = cy + (long)(sqrt(sq((float)(lr)) - sq(fx - cx))); // fy = cy + (long)(sqrt(rxr - sq(fx - cx)));
     if (ey < cy)
-      fy = cy - (long)(sqrt(rxr - sq(fx - cx)));
+      fy = cy - (long)(sqrt(sq((float)(lr)) - sq(fx - cx))); // fy = cy - (long)(sqrt(rxr - sq(fx - cx)));
     if (ey == cy)
       fy = cy;
   }
   else {
     if (ex > cx) {
-      fx = cx + r;
+      fx = cx + lr; // fx = cx + r;
     }
     else {
-      fx = cx - r;
+      fx = cx - lr; //fx = cx - r;
     }
     fy = cy;
   }
@@ -128,37 +128,37 @@ void intpolcirc(bool dir, float x, float y, float z, float i, float j) {
   float ln, lt; // ln is length of arc from 0 degrees to starting point sx,sy, lt is temporary length of arc from 0 to fx,fy and total (real) length of arc
 
   //calculate length of arc from 0 degrees to starting points sx,sy:
-  if ((sx - cx) / r > 1.0) // eliminate rounding anomalities (sxcx distance greater than radius)
-    ln = (float)(acos(1.0) * r);
-  else if ((sx - cx) / r < -1.0)
-    ln = (float)(acos(-1.0) * r);
+  if ((sx - cx) / lr > 1.0) // eliminate rounding anomalities (sxcx distance greater than radius)
+    ln = (float)(acos(1.0) * lr);
+  else if ((sx - cx) / lr < -1.0)
+    ln = (float)(acos(-1.0) * lr);
   else
-    ln = (float)(acos((sx - cx) / r) * r); // length of null arc from 0 degrees to angle defined by start points px,py --> ln = acos(delta pxcx / r) * r
+    ln = (float)(acos((sx - cx) / lr) * lr); // length of null arc from 0 degrees to angle defined by start points px,py --> ln = acos(delta pxcx / r) * r
   if (sy < cy)
-    ln = 2 * r * PI - ln; // modify length if sy < cy (in III and IV quadrants), ln = 2rPI - acos(delta sxcx / r) * r
+    ln = 2 * lr * PI - ln; // modify length if sy < cy (in III and IV quadrants), ln = 2rPI - acos(delta sxcx / r) * r
   // similary calculate length of arc from 0 degrees to final points fx,fy:
-  if ((fx - cx) / r > 1.0)
-    lt = (float)(acos(1.0) * r);
-  else if ((fx - cx) / r < -1.0)
-    lt = (float)(acos(-1.0) * r);
+  if ((fx - cx) / lr > 1.0)
+    lt = (float)(acos(1.0) * lr);
+  else if ((fx - cx) / lr < -1.0)
+    lt = (float)(acos(-1.0) * lr);
   else
-    lt = (float)(acos((fx - cx) / r) * r); // length total (from 0 to final point for now ) --> lt = acos(delta fxcx / r) * r
+    lt = (float)(acos((fx - cx) / lr) * lr); // length total (from 0 to final point for now ) --> lt = acos(delta fxcx / r) * r
   if (fy < cy)
-    lt = 2 * r * PI - lt;
+    lt = 2 * lr * PI - lt;
   // calculate arc length as lt=lt-ln, but account for dir and CW/CCW
   if (dir == CCW) { // if dir ir CCW
     lt -= ln; // length total equals length from 0 to final point minus length from 0 to start point
     if (lt < 0) // but...
-      lt += 2 * r * PI; // modify length total if less than zero (eg: ln is in IV q)
+      lt += 2 * lr * PI; // modify length total if less than zero (eg: ln is in IV q)
   }
   else { // if dir == CW
     lt = ln - lt; // total length equals length from 0 to start point minus length from 0 to final point
     if (lt < 0) // but...
-      lt += 2 * r * PI; // modify if necessary
+      lt += 2 * lr * PI; // modify if necessary
   }
   if (fx == px && fy == py) { // spec. case full circle
     // ln = 0;
-    lt = 2 * r * PI;
+    lt = 2 * lr * PI;
   }
 
   float a = 0; // z to l coefficient
@@ -202,7 +202,7 @@ void intpolcirc(bool dir, float x, float y, float z, float i, float j) {
 #endif
   if (lt <= 0) {
     Serial.println(" dbg: WARNING: lt <=0!!! Setting it to 2*r*PI");
-    lt = 2 * r * PI; // CAUTION!!!
+    lt = 2 * lr * PI; // CAUTION!!!
   }
   char s = 0; // s is sign +1 or -1 WARNING s=0 (undefined) intentionaly!!!
   long ny; // ny is absolute next py
@@ -246,31 +246,31 @@ void intpolcirc(bool dir, float x, float y, float z, float i, float j) {
     if (px == fx && py == fy) // sometimes this happens between steping on x and y!
       break;
     // calculate ny for px:
-    if ((float)(sq(px - cx)) <= rxr) // avoid sqrt of negative numbers!!!
-      ny = (long)(sqrt(rxr - sq(px - cx))); // calculate ny relative to cy
+    if ((float)(sq(px - cx)) <= sq((float)(lr))) // avoid sqrt of negative numbers!!!
+      ny = (long)(sqrt(sq((float)(lr)) - sq(px - cx))); // calculate ny relative to cy
     else
       ny = 0;
     ny = s * ny + cy; // calculate absolute ny
     // Now multistep on y and z
     while (py != ny) {
       // calculate length of arc: pl=present length. First fom 0 degrees to present position, then from ln null length
-      if ((px - cx) / r > 1.0) // sometimes this happens, but why!!!
-        lp = (float)(acos(1.0) * r);
-      else if ((px - cx) / r < -1.0) // sometimes may happen!!!
-        lp = (float)(acos(-1.0) * r);
+      if ((px - cx) / lr > 1.0) // sometimes this happens, but why!!!
+        lp = (float)(acos(1.0) * lr);
+      else if ((px - cx) / lr < -1.0) // sometimes may happen!!!
+        lp = (float)(acos(-1.0) * lr);
       else // generally
-        lp = (float)(acos((px - cx) / r) * r); // l-present --> lp = acos(delta pxcx / r) * r
+        lp = (float)(acos((px - cx) / lr) * lr); // l-present --> lp = acos(delta pxcx / r) * r
       if (s == -1) // if in quadrants III or IV CAUTION: if(py < cy) IS WRONG HERE!!!
-        lp = 2 * r * PI - lp; //if py < cy lp = 2rPI - acos(delta pxcx / r) * r
+        lp = 2 * lr * PI - lp; //if py < cy lp = 2rPI - acos(delta pxcx / r) * r
       if (dir == CCW) {
         lp -= ln;
         if (lp < 0)
-          lp += 2 * r * PI;
+          lp += 2 * lr * PI;
       }
       else { // if dir == CW
         lp = ln - lp;
         if (lp < 0)
-          lp += 2 * r * PI;
+          lp += 2 * lr * PI;
       }
       if (lp > lt) {
         dbgtxt = " dbg: WARNING: lp > lt!!!\n\r dbg: px,py,lp,lt: " + String(px) + ", " + String(py) + ", " + String(lp, 6) + ", " + String(lt, 6);
@@ -368,9 +368,9 @@ void intpolline(float x, float y, float z) {
     a = (y / x); //calculate coefficients for the other two lines
     b = (z / x);
 #ifdef VERBOSE
-      dbgtxt += "\n\r dbg: a=y/x: " + String(a, 6);
-      dbgtxt += "\n\r dbg: b=z/x: " + String(b, 6);
-      Serial.println(dbgtxt);
+    dbgtxt += "\n\r dbg: a=y/x: " + String(a, 6);
+    dbgtxt += "\n\r dbg: b=z/x: " + String(b, 6);
+    Serial.println(dbgtxt);
 #endif
     while (ex != px) { //while not at end x
       if (ex > px) //step on x axis toward end x
